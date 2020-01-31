@@ -32,9 +32,9 @@ const plugins = [
 
 export default [
   {
-    input: 'src/boilerplate-card.ts',
+    input: 'src/wiser-home-card.ts',
     output: {
-      dir: 'dist',
+      dir: 'D:\\Users\\Goblin\\OneDrive\\Development\\homeassistant\\configuration\\www',
       format: 'es',
     },
     plugins: [...plugins],

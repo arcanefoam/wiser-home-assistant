@@ -1,7 +1,7 @@
 {
-  "name": "boilerplate-card",
-  "version": "1.1.7",
-  "description": "Lovelace boilerplate-card",
+  "name": "wiser-home-card",
+  "version": "0.1.0",
+  "description": "Wiser Home Card",
   "keywords": [
     "home-assistant",
     "homeassistant",
@@ -10,21 +10,23 @@
     "lovelace",
     "custom-cards"
   ],
-  "module": "boilerplate-card.js",
-  "repository": "git@github.com:custom_cards/boilerplate-card.git",
-  "author": "Ian Richardson <iantrich@gmail.com>",
+  "module": "wiser-home-card.js",
+  "repository": "git@github.com:arcanefoam/wiser-home-card.git",
+  "author": "Horacio Hoyos <arcanefoam@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "custom-card-helpers": "^1.3.9",
     "home-assistant-js-websocket": "^4.4.0",
     "lit-element": "^2.2.1",
-    "lit-html": "^1.1.2"
+    "lit-html": "^1.1.2",
+    "materialize-css": "^1.0.0-rc.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
     "@babel/plugin-proposal-decorators": "^7.4.0",
     "@rollup/plugin-json": "^4.0.0",
+    "@types/materialize-css": "^1.0.7",
     "@typescript-eslint/eslint-plugin": "^2.6.0",
     "@typescript-eslint/parser": "^2.6.0",
     "eslint": "^6.6.0",
@@ -39,7 +41,7 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-serve": "^1.0.1",
     "rollup-plugin-terser": "^5.1.2",
-    "rollup-plugin-typescript2": "^0.24.3",
+    "rollup-plugin-typescript2": "^0.25.3",
     "rollup-plugin-uglify": "^6.0.3",
     "typescript": "^3.6.4"
   },
