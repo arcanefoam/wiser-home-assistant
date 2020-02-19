@@ -29,27 +29,42 @@ const homeIcons = {
   'heat-demand': 'mdi:fire',
 };
 
+const debug = true;
+
 const capitalize = (s): string => {
   if (typeof s !== 'string') return '';
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
-function comfort(current_setpoint: string): string {
-  const setpoint = Number(current_setpoint);
-  if (setpoint == NaN) {
+function comfort(setpoint: string): string {
+  const sp = Number(setpoint);
+  if (sp == NaN) {
     return 'off';
   }
-  if (setpoint > 25) {
+  if (sp > 25) {
     return 'too_hot';
-  } else if (setpoint > 21) {
+  } else if (sp > 21) {
     return 'warm';
-  } else if (setpoint > 17) {
+  } else if (sp > 17) {
     return 'comfortable';
-  } else if (setpoint > 15) {
+  } else if (sp > 15) {
     return 'cool';
+  } else if (sp > 10) {
+    return 'cold';
   }
-  return 'cool';
+  return 'off';
 }
+
+const modeIcon = {
+  Auto: 'mdi-calendar-clock',
+  Manual: 'mdi-account-box',
+  Away: 'mdi-home-export-outline',
+};
+
+const boostClass = {
+  '+': 'boostup',
+  '-': 'boostdown',
+};
 
 // TODO Name your custom element
 @customElement('wiser-home-card')
@@ -112,6 +127,7 @@ export class WiserHomeCard extends LitElement {
       `;
     }
     const rooms = stateObj.attributes.rooms;
+    console.log(stateObj.attributes.boiler);
     return html`
       <ha-card
         @action=${this._handleAction}
@@ -128,6 +144,18 @@ export class WiserHomeCard extends LitElement {
           <div class="name">
             ${(this._config && this._config.name) || computeStateName(stateObj)}
           </div>
+          <div class="name">
+            ${stateObj.attributes.boiler == 'On'
+              ? html`
+                  <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:power"></ha-icon>
+                `
+              : html`
+                  <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:power"></ha-icon>
+                `}
+          </div>
+          <div>
+            Boost <mwc-switch @click=${(this.boostHandler())} style="position: relative;"></mwc-switch>
+          </div>
         </div>
         ${rooms
           ? html`
@@ -139,12 +167,12 @@ export class WiserHomeCard extends LitElement {
                         ${capitalize(item.name)}
                       </div>
                       <div class="container data">
-                        <div class="column setpoint align-right ${comfort(item.current_setpoint)}">
-                          ${item.current_setpoint} °
+                        <div class="column setpoint align-right ${comfort(item.setpoint)}">
+                          ${item.setpoint} °
                         </div>
                         <div class="column"></div>
                         <div class="column align-right">
-                          ${!item.heating
+                          ${item.heating
                             ? html`
                                 <ha-icon style="width: 30px; height: 30px; color: #ff9900;" icon="hass:fire"></ha-icon>
                               `
@@ -152,8 +180,14 @@ export class WiserHomeCard extends LitElement {
                                 <ha-icon></ha-icon>
                               `}
                         </div>
-                        <div class="column"></div>
-                        <div class="column current align-left">${item.current_temp} °</div>
+                        ${item.valve_boost != 0
+                          ? html`
+                              <div class="column ${boostClass[item.valve_boost]}">${item.valve_boost}</div>
+                            `
+                          : html`
+                              <div class="column"></div>
+                            `}
+                        <div class="column current align-left">${item.temperature} °</div>
                       </div>
                     </div>
                   `,
@@ -189,7 +223,7 @@ export class WiserHomeCard extends LitElement {
       .name {
         margin-left: 16px;
         font-size: 16px;
-        color: var(--secondary-text-color);
+        color: DimGray;
       }
       .container {
         display: flex;
@@ -200,7 +234,7 @@ export class WiserHomeCard extends LitElement {
         width: 20%;
       }
       .data {
-        padding: 10px;
+        padding: 5px;
       }
       .current {
         font-weight: 300;
@@ -217,30 +251,44 @@ export class WiserHomeCard extends LitElement {
       }
       .too_hot {
         background-color: #cc0000;
+        color: white;
       }
       .warm {
         background-color: #ff6600;
+        color: white;
       }
       .comfortable {
         background-color: #009933;
+        color: white;
       }
       .cool {
         background-color: #00cc00;
+        color: white;
       }
       .cold {
         background-color: #00ccff;
+        color: white;
       }
       .off {
         background-color: WhiteSmoke;
+        color: black;
       }
       .setpoint {
-        border-radius: 0px 15px 15px 0px;
-        width: auto;
-        height: auto;
-        line-height: 30px;
+        border-radius: 0px 10px 10px 0px;
+        width: 80px;
+        height: 20px;
+        line-height: 20px;
         padding: 5px 10px 5px 30px;
         display: inline-block;
         vertical-align: middle;
+      }
+      .boostup {
+        color: #0000ff;
+        font-size: 20px;
+      }
+      .boostdown {
+        color: #ff0000;
+        font-size: 20px;
       }
       .align-right {
         text-align: right;
@@ -265,5 +313,9 @@ export class WiserHomeCard extends LitElement {
         padding: 8px;
       }
     `;
+  }
+
+  private boostHandler() {
+    console.log('Boost handlers');
   }
 }
