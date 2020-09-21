@@ -1,0 +1,1 @@
+"""The Wiser Home Component."""
