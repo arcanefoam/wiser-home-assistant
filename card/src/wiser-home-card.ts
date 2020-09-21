@@ -7,7 +7,6 @@ import {
   handleAction,
   LovelaceCardEditor,
   getLovelace,
-  computeStateName,
 } from 'custom-card-helpers';
 
 import './editor';
@@ -133,8 +132,7 @@ export class WiserHomeCard extends LitElement {
         @action=${this._handleAction}
         .actionHandler=${actionHandler({
           hasHold: hasAction(this._config.hold_action),
-          hasDoubleTap: hasAction(this._config.double_tap_action),
-          repeat: this._config.hold_action ? this._config.hold_action.repeat : undefined,
+          hasDoubleClick: hasAction(this._config.double_tap_action),
         })}
         tabindex="0"
         aria-label=${`Wiser-Home: ${this._config.entity}`}
@@ -142,7 +140,7 @@ export class WiserHomeCard extends LitElement {
         <div class="header">
           ${stateObj.state}
           <div class="name">
-            ${(this._config && this._config.name) || computeStateName(stateObj)}
+            ${this._config && this._config.name}
           </div>
           <div class="name">
             ${stateObj.attributes.boiler == 'On'
@@ -153,9 +151,7 @@ export class WiserHomeCard extends LitElement {
                   <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:power"></ha-icon>
                 `}
           </div>
-          <div>
-            Boost <mwc-switch @click=${(this.boostHandler())} style="position: relative;"></mwc-switch>
-          </div>
+          <div>Boost <mwc-switch @click=${this.boostHandler()} style="position: relative;"></mwc-switch></div>
         </div>
         ${rooms
           ? html`
