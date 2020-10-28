@@ -18,6 +18,7 @@ import { CARD_VERSION } from './const';
 import { localize } from './localize/localize';
 import { Toast } from './styles/toast';
 import './room';
+import { Wiser } from './styles/wiser';
 
 /* eslint no-console: 0 */
 console.info(
@@ -97,6 +98,24 @@ export class WiserHomeCard extends LitElement {
       `;
     }
     const rooms = stateObj.attributes.rooms;
+    let room = {
+      heating: false,
+      manual: true,
+      name: 'kitchen',
+      setpoint: '16',
+      temperature: 20,
+      valve_boost: '+',
+    };
+    rooms.push(room);
+    room = {
+      heating: true,
+      manual: false,
+      name: 'office',
+      setpoint: '26.5',
+      temperature: 28.6,
+      valve_boost: '-',
+    };
+    rooms.push(room);
     return html`
       <ha-card
         @action=${this._handleAction}
@@ -108,30 +127,32 @@ export class WiserHomeCard extends LitElement {
         aria-label=${`Wiser-Home: ${this.config.entity}`}
       >
         <div class="header">
-          <div class="grid container">
-            <div class="grid__col grid__col--1-of-6 grid__col--d-first">
-              <img src="/local/img/wiserheat.png" style="width: 32px" />
-            </div>
-            <div class="grid__col grid__col--1-of-6">
-              ${this.config && this.config.name}
-            </div>
-            <div class="grid__col grid__col--1-of-6">
-              <ha-icon
-                style="width: 30px; height: 30px; color: #0099ff;"
-                icon="hass:${modeIcon[stateObj.state]}"
-              ></ha-icon>
-            </div>
-            <div class="grid__col grid__col--1-of-6">
-              ${stateObj.attributes.boiler == 'On'
-                ? html`
-                    <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:water-boiler"></ha-icon>
-                  `
-                : html`
-                    <ha-icon style="width: 30px; height: 30px; color: #6b6b6b;" icon="hass:water-boiler"></ha-icon>
-                  `}
-            </div>
-            <div class="grid__col grid__col--2-of-6">
-              Boost <mwc-switch @click=${this.boostHandler()} style="position: relative;"></mwc-switch>
+          <div class="container">
+            <div class="grid">
+              <div class="grid__col grid__col--1-of-6">
+                <img src="/local/img/wiserheat.png" style="width: 32px" />
+              </div>
+              <div class="grid__col grid__col--1-of-6">
+                ${this.config && this.config.name}
+              </div>
+              <div class="grid__col grid__col--1-of-6">
+                <ha-icon
+                  style="width: 30px; height: 30px; color: #0099ff;"
+                  icon="hass:${modeIcon[stateObj.state]}"
+                ></ha-icon>
+              </div>
+              <div class="grid__col grid__col--1-of-6">
+                ${stateObj.attributes.boiler == 'On'
+                  ? html`
+                      <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:water-boiler"></ha-icon>
+                    `
+                  : html`
+                      <ha-icon style="width: 30px; height: 30px; color: #6b6b6b;" icon="hass:water-boiler"></ha-icon>
+                    `}
+              </div>
+              <div class="grid__col grid__col--2-of-6">
+                Boost <mwc-switch @click=${this.boostHandler()} style="position: relative;"></mwc-switch>
+              </div>
             </div>
           </div>
         </div>
@@ -145,7 +166,8 @@ export class WiserHomeCard extends LitElement {
                       name="${item.name}"
                       temperature="${item.temperature}"
                       setpoint="${item.setpoint}"
-                      heating="${item.heating}"
+                      ?heating="${item.heating}"
+                      ?manual="${item.manual}"
                       boost="${item.valve_boost}"
                     ></wiser-room-digest>
                   `;

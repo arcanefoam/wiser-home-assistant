@@ -4,9 +4,12 @@ import { Style } from './styles';
 export class Toast implements Style {
   styles(): CSSResult {
     return css`
+      .container {
+        width: 100%;
+      }
       .grid {
         list-style: none;
-        margin-left: -1.25;
+        margin-left: -1.25em;
       }
 
       .grid__col--2-of-2,
