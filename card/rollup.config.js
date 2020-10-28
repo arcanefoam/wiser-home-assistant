@@ -29,7 +29,8 @@ const plugins = [
     exclude: 'node_modules/**',
   }),
   copy({
-    targets: [{ src: 'img/*', dest: 'dist/www/img' }],
+    targets: [{ src: 'img', dest: '../dist/www' }],
+    verbose: true,
   }),
   dev && serve(serveopts),
   !dev && terser(),

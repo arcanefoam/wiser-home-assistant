@@ -16,6 +16,8 @@ import { actionHandler } from './action-handler-directive';
 import { CARD_VERSION } from './const';
 
 import { localize } from './localize/localize';
+import { Toast } from './styles/toast';
+import './room';
 
 /* eslint no-console: 0 */
 console.info(
@@ -30,43 +32,10 @@ const homeIcons = {
 
 const debug = true;
 
-const capitalize = (s): string => {
-  if (typeof s !== 'string') return '';
-  return s.charAt(0).toUpperCase() + s.slice(1);
-};
-
-/**
- * Returns the CSS class to use for the given setpoint
- * @param setpoint
- */
-function comfort(setpoint: string): string {
-  const sp = Number(setpoint);
-  if (sp == NaN) {
-    return 'off';
-  }
-  if (sp > 25) {
-    return 'too_hot';
-  } else if (sp > 21) {
-    return 'warm';
-  } else if (sp > 17) {
-    return 'comfortable';
-  } else if (sp > 15) {
-    return 'cool';
-  } else if (sp > 10) {
-    return 'cold';
-  }
-  return 'off';
-}
-
 const modeIcon = {
-  Auto: 'mdi-calendar-clock',
-  Manual: 'mdi-account-box',
-  Away: 'mdi-home-export-outline',
-};
-
-const boostClass = {
-  '+': 'boostup',
-  '-': 'boostdown',
+  Auto: 'calendar-clock',
+  Manual: 'calendar-minus',
+  Away: 'calendar-arrow-right',
 };
 
 @customElement('wiser-home-card')
@@ -139,26 +108,29 @@ export class WiserHomeCard extends LitElement {
         aria-label=${`Wiser-Home: ${this.config.entity}`}
       >
         <div class="header">
-          <div class="container">
-            <div class="column">
+          <div class="grid container">
+            <div class="grid__col grid__col--1-of-6 grid__col--d-first">
               <img src="/local/img/wiserheat.png" style="width: 32px" />
             </div>
-            <div class="column">
+            <div class="grid__col grid__col--1-of-6">
               ${this.config && this.config.name}
             </div>
-            <div class="column">
-              ${stateObj.state}
+            <div class="grid__col grid__col--1-of-6">
+              <ha-icon
+                style="width: 30px; height: 30px; color: #0099ff;"
+                icon="hass:${modeIcon[stateObj.state]}"
+              ></ha-icon>
             </div>
-            <div class="column">
+            <div class="grid__col grid__col--1-of-6">
               ${stateObj.attributes.boiler == 'On'
                 ? html`
-                    <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:power"></ha-icon>
+                    <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:water-boiler"></ha-icon>
                   `
                 : html`
-                    <ha-icon style="width: 30px; height: 30px; color: #6b6b6b;" icon="hass:power"></ha-icon>
+                    <ha-icon style="width: 30px; height: 30px; color: #6b6b6b;" icon="hass:water-boiler"></ha-icon>
                   `}
             </div>
-            <div class="column">
+            <div class="grid__col grid__col--2-of-6">
               Boost <mwc-switch @click=${this.boostHandler()} style="position: relative;"></mwc-switch>
             </div>
           </div>
@@ -166,38 +138,18 @@ export class WiserHomeCard extends LitElement {
         ${rooms
           ? html`
               <div class="card-content test">
-                ${rooms.map(
-                  item => html`
-                    <div class="room">
-                      <div class="name">
-                        ${capitalize(item.name)}
-                      </div>
-                      <div class="container data">
-                        <div class="column setpoint align-right ${comfort(item.setpoint)}">
-                          ${item.setpoint} °
-                        </div>
-                        <div class="column"></div>
-                        <div class="column align-right">
-                          ${item.heating
-                            ? html`
-                                <ha-icon style="width: 30px; height: 30px; color: #ff9900;" icon="hass:fire"></ha-icon>
-                              `
-                            : html`
-                                <ha-icon></ha-icon>
-                              `}
-                        </div>
-                        ${item.valve_boost != 0
-                          ? html`
-                              <div class="column ${boostClass[item.valve_boost]}">${item.valve_boost}</div>
-                            `
-                          : html`
-                              <div class="column"></div>
-                            `}
-                        <div class="column current align-left">${item.temperature} °</div>
-                      </div>
-                    </div>
-                  `,
-                )}
+                ${rooms.map(item => {
+                  console.log('room', item);
+                  return html`
+                    <wiser-room-digest
+                      name="${item.name}"
+                      temperature="${item.temperature}"
+                      setpoint="${item.setpoint}"
+                      heating="${item.heating}"
+                      boost="${item.valve_boost}"
+                    ></wiser-room-digest>
+                  `;
+                })}
               </div>
             `
           : ''}
@@ -211,114 +163,25 @@ export class WiserHomeCard extends LitElement {
     }
   }
 
-  static get styles(): CSSResult {
-    return css`
-      .header {
-        font-family: var(--paper-font-headline_-_font-family);
-        -webkit-font-smoothing: var(--paper-font-headline_-_-webkit-font-smoothing);
-        font-size: var(--paper-font-headline_-_font-size);
-        font-weight: var(--paper-font-headline_-_font-weight);
-        letter-spacing: var(--paper-font-headline_-_letter-spacing);
-        line-height: var(--paper-font-headline_-_line-height);
-        text-rendering: var(--paper-font-common-expensive-kerning_-_text-rendering);
-        opacity: var(--dark-primary-opacity);
-        padding: 24px 16px 16px;
-        display: flex;
-        align-items: baseline;
-      }
-      .name {
-        margin-left: 16px;
-        font-size: 16px;
-        color: DimGray;
-      }
-      .container {
-        display: flex;
-      }
-      .column {
-        float: left;
-        position: relative;
-        width: 20%;
-      }
-      .data {
-        padding: 5px;
-      }
-      .current {
-        font-weight: 300;
-        font-size: 30px;
-        padding-right: 15px;
-      }
-      .room {
-        padding: 5px;
-        margin-top: 5px;
-        background-color: #e8e8e8;
-        border-radius: 15px 15px 15px 15px;
-        width: auto;
-        height: auto;
-      }
-      .too_hot {
-        background-color: #cc0000;
-        color: white;
-      }
-      .warm {
-        background-color: #ff6600;
-        color: white;
-      }
-      .comfortable {
-        background-color: #009933;
-        color: white;
-      }
-      .cool {
-        background-color: #00cc00;
-        color: white;
-      }
-      .cold {
-        background-color: #00ccff;
-        color: white;
-      }
-      .off {
-        background-color: WhiteSmoke;
-        color: black;
-      }
-      .setpoint {
-        border-radius: 0px 10px 10px 0px;
-        width: 80px;
-        height: 20px;
-        line-height: 20px;
-        padding: 5px 10px 5px 30px;
-        display: inline-block;
-        vertical-align: middle;
-      }
-      .boostup {
-        color: #0000ff;
-        font-size: 20px;
-      }
-      .boostdown {
-        color: #ff0000;
-        font-size: 20px;
-      }
-      .align-right {
-        text-align: right;
-      }
-      .align-left {
-        text-align: left;
-      }
-      .align-center {
-        text-align: left;
-      }
-      .superscript {
-        font-size: 17px;
-        font-weight: 600;
-        position: absolute;
-        right: -5px;
-        top: 15px;
-      }
-      .warning {
-        display: block;
-        color: black;
-        background-color: #fce588;
-        padding: 8px;
-      }
-    `;
+  static get styles(): CSSResult[] {
+    return [
+      new Toast().styles(),
+      css`
+        .header {
+          font-family: var(--paper-font-headline_-_font-family);
+          -webkit-font-smoothing: var(--paper-font-headline_-_-webkit-font-smoothing);
+          font-size: var(--paper-font-headline_-_font-size);
+          font-weight: var(--paper-font-headline_-_font-weight);
+          letter-spacing: var(--paper-font-headline_-_letter-spacing);
+          line-height: var(--paper-font-headline_-_line-height);
+          text-rendering: var(--paper-font-common-expensive-kerning_-_text-rendering);
+          opacity: var(--dark-primary-opacity);
+          padding: 24px 16px 16px;
+          display: flex;
+          align-items: baseline;
+        }
+      `,
+    ];
   }
 
   private boostHandler() {
