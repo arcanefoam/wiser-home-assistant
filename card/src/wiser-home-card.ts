@@ -35,6 +35,10 @@ const capitalize = (s): string => {
   return s.charAt(0).toUpperCase() + s.slice(1);
 };
 
+/**
+ * Returns the CSS class to use for the given setpoint
+ * @param setpoint
+ */
 function comfort(setpoint: string): string {
   const sp = Number(setpoint);
   if (sp == NaN) {
@@ -65,7 +69,6 @@ const boostClass = {
   '-': 'boostdown',
 };
 
-// TODO Name your custom element
 @customElement('wiser-home-card')
 export class WiserHomeCard extends LitElement {
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
@@ -78,19 +81,18 @@ export class WiserHomeCard extends LitElement {
 
   // TODO Add any properties that should cause your element to re-render here
   @property() public hass?: HomeAssistant;
-  @property() private _config?: WiserHomeCardConfig;
+  @property() private config?: WiserHomeCardConfig;
 
   public setConfig(config: WiserHomeCardConfig): void {
     // TODO Check for required fields and that they are of the proper format
     if (!config || config.show_error) {
       throw new Error(localize('common.invalid_configuration'));
     }
-
     if (config.test_gui) {
       getLovelace().setEditMode(true);
     }
 
-    this._config = {
+    this.config = {
       ...config,
     };
   }
@@ -100,12 +102,12 @@ export class WiserHomeCard extends LitElement {
   }
 
   protected render(): TemplateResult | void {
-    if (!this._config || !this.hass) {
+    if (!this.config || !this.hass) {
       return html``;
     }
 
     // TODO Check for stateObj or other necessary things and render a warning if missing
-    if (this._config.show_warning) {
+    if (this.config.show_warning) {
       return html`
         <ha-card>
           <div class="warning">${localize('common.show_warning')}</div>
@@ -113,49 +115,57 @@ export class WiserHomeCard extends LitElement {
       `;
     }
 
-    const stateObj = this.hass.states[this._config.entity!];
+    const stateObj = this.hass.states[this.config.entity!];
     if (!stateObj) {
       return html`
         <hui-warning
           >${this.hass.localize(
             'ui.panel.lovelace.warning.entity_not_found',
             'entity',
-            this._config.entity,
+            this.config.entity,
           )}</hui-warning
         >
       `;
     }
     const rooms = stateObj.attributes.rooms;
-    console.log(stateObj.attributes.boiler);
     return html`
       <ha-card
         @action=${this._handleAction}
         .actionHandler=${actionHandler({
-          hasHold: hasAction(this._config.hold_action),
-          hasDoubleClick: hasAction(this._config.double_tap_action),
+          hasHold: hasAction(this.config.hold_action),
+          hasDoubleClick: hasAction(this.config.double_tap_action),
         })}
         tabindex="0"
-        aria-label=${`Wiser-Home: ${this._config.entity}`}
+        aria-label=${`Wiser-Home: ${this.config.entity}`}
       >
         <div class="header">
-          ${stateObj.state}
-          <div class="name">
-            ${this._config && this._config.name}
+          <div class="container">
+            <div class="column">
+              <img src="/local/img/wiserheat.png" style="width: 32px" />
+            </div>
+            <div class="column">
+              ${this.config && this.config.name}
+            </div>
+            <div class="column">
+              ${stateObj.state}
+            </div>
+            <div class="column">
+              ${stateObj.attributes.boiler == 'On'
+                ? html`
+                    <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:power"></ha-icon>
+                  `
+                : html`
+                    <ha-icon style="width: 30px; height: 30px; color: #6b6b6b;" icon="hass:power"></ha-icon>
+                  `}
+            </div>
+            <div class="column">
+              Boost <mwc-switch @click=${this.boostHandler()} style="position: relative;"></mwc-switch>
+            </div>
           </div>
-          <div class="name">
-            ${stateObj.attributes.boiler == 'On'
-              ? html`
-                  <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:power"></ha-icon>
-                `
-              : html`
-                  <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:power"></ha-icon>
-                `}
-          </div>
-          <div>Boost <mwc-switch @click=${this.boostHandler()} style="position: relative;"></mwc-switch></div>
         </div>
         ${rooms
           ? html`
-              <div class="card-content">
+              <div class="card-content test">
                 ${rooms.map(
                   item => html`
                     <div class="room">
@@ -196,8 +206,8 @@ export class WiserHomeCard extends LitElement {
   }
 
   private _handleAction(ev: ActionHandlerEvent): void {
-    if (this.hass && this._config && ev.detail.action) {
-      handleAction(this, this.hass, this._config, ev.detail.action);
+    if (this.hass && this.config && ev.detail.action) {
+      handleAction(this, this.hass, this.config, ev.detail.action);
     }
   }
 

@@ -5,6 +5,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 import serve from 'rollup-plugin-serve';
 import json from '@rollup/plugin-json';
+import copy from 'rollup-plugin-copy';
 
 const dev = process.env.ROLLUP_WATCH;
 
@@ -26,6 +27,9 @@ const plugins = [
   babel({
     babelHelpers: 'bundled',
     exclude: 'node_modules/**',
+  }),
+  copy({
+    targets: [{ src: 'img/*', dest: 'dist/www/img' }],
   }),
   dev && serve(serveopts),
   !dev && terser(),
