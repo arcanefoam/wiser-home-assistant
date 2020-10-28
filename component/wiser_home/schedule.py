@@ -437,11 +437,11 @@ class Schedule:
         def log(msg: str, path: RulePath, *args: T.Any, **kwargs: T.Any) -> None:
             """Wrapper around _LOGGER.debug that prefixes spaces to the
             message based on the length of the rule path."""
-
-            prefix = " " * 4 * max(0, len(path.rules) - 1) #+ "\u251c\u2500"
+            pass
+            # prefix = " " * 4 * max(0, len(path.rules) - 1) #+ "\u251c\u2500"
             # _log.debug("{} {}".format(prefix, msg))
 
-        log("Assuming it to be {}.".format(when))
+        # _log("Assuming it to be {}.".format(when))
 
         expr_cache = {}  # type: T.Dict[types.CodeType, T.Any]
         expr_env = None
