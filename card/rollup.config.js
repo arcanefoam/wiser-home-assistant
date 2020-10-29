@@ -3,7 +3,6 @@ import commonjs from '@rollup/plugin-commonjs';
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
-import serve from 'rollup-plugin-serve';
 import json from '@rollup/plugin-json';
 import copy from 'rollup-plugin-copy';
 
@@ -32,7 +31,6 @@ const plugins = [
     targets: [{ src: 'img', dest: '../dist/www' }],
     verbose: true,
   }),
-  dev && serve(serveopts),
   !dev && terser(),
 ];
 

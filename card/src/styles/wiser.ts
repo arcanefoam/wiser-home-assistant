@@ -73,7 +73,7 @@ export class Wiser implements Style {
         text-align: left;
       }
       .align-center {
-        text-align: left;
+        text-align: center;
       }
       .superscript {
         font-size: 17px;
@@ -81,17 +81,6 @@ export class Wiser implements Style {
         position: absolute;
         right: -5px;
         top: 15px;
-      }
-      .warning {
-        display: block;
-        color: black;
-        background-color: #fce588;
-        padding: 8px;
-      }
-      .icon {
-        --mdc-icon-size: 40px;
-        height: 40px;
-        width: 40px;
       }
     `;
   }
