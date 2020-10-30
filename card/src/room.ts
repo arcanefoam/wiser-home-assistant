@@ -1,6 +1,7 @@
 import { CSSResult, customElement, html, LitElement, property } from 'lit-element';
 import { Toast } from './styles/toast';
 import { Wiser } from './styles/wiser';
+import { ICONS } from './icons';
 
 const capitalize = (s): string => {
   if (typeof s !== 'string') return '';
@@ -58,15 +59,7 @@ export class RoomDigest extends LitElement {
                   <div class="grid__col grid__col--2-of-12 setpoint ${comfort(this.setpoint)}">
                     ${this.setpoint} °
                   </div>
-                  <div class="grid__col grid__col--push-2-of-12 grid__col--1-of-12">
-                    ${this.heating
-                      ? html`
-                          <ha-icon class="icon" style="color: #ff9900;" icon="hass:fire"></ha-icon>
-                        `
-                      : html`
-                          <ha-icon></ha-icon>
-                        `}
-                  </div>
+                  <div class="grid__col grid__col--push-2-of-12 grid__col--1-of-12"></div>
                 `
               : html`
                   <div class="grid__col grid__col--4-of-12 setpoint ${comfort(this.setpoint)}">

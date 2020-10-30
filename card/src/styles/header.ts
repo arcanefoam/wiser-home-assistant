@@ -18,6 +18,9 @@ export class Header implements Style {
         height: 40px;
         width: 40px;
       }
+      .svg-icon {
+        text-align: center;
+      }
       .svg-icon svg {
         position: relative;
         top: 0%;
@@ -30,6 +33,15 @@ export class Header implements Style {
         display: none;
       }
       .no-svg .fallback {
+      }
+      .wiserheat {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: 32px;
+      }
+      .boost mwc-switch {
+        margin-left: 10px;
       }
     `;
   }
