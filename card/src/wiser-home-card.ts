@@ -19,7 +19,7 @@ import { localize } from './localize/localize';
 import { Toast } from './styles/toast';
 import './room';
 import { Header } from './styles/header';
-import { ICONS } from './icons';
+import { icon } from './icons';
 
 /* eslint no-console: 0 */
 console.info(
@@ -27,10 +27,6 @@ console.info(
   'color: orange; font-weight: bold; background: black',
   'color: white; font-weight: bold; background: dimgray',
 );
-
-const homeIcons = {
-  'heat-demand': 'mdi:fire',
-};
 
 const debug = true;
 
@@ -93,24 +89,38 @@ export class WiserHomeCard extends LitElement {
       `;
     }
     const rooms = stateObj.attributes.rooms;
-    let room = {
-      heating: false,
-      manual: true,
-      name: 'kitchen',
-      setpoint: '16',
-      temperature: 20,
-      valve_boost: '+',
-    };
-    rooms.push(room);
-    room = {
-      heating: true,
-      manual: false,
-      name: 'office',
-      setpoint: '26.5',
-      temperature: 28.6,
-      valve_boost: '-',
-    };
-    rooms.push(room);
+
+    if (debug) {
+      let room = {
+        heating: false,
+        manual: true,
+        name: 'kitchen',
+        setpoint: '16',
+        temperature: 20,
+        valve_boost: '+',
+      };
+      rooms.push(room);
+      room = {
+        heating: true,
+        manual: false,
+        name: 'office',
+        setpoint: '26.5',
+        temperature: 28.6,
+        valve_boost: '-',
+      };
+      rooms.push(room);
+      room = {
+        heating: true,
+        manual: true,
+        name: 'living room',
+        setpoint: '22',
+        temperature: 15.8,
+        valve_boost: '0',
+      };
+      rooms.push(room);
+      stateObj.attributes.boiler = 'On';
+    }
+
     return html`
       <ha-card
         @action=${this._handleAction}
@@ -131,12 +141,12 @@ export class WiserHomeCard extends LitElement {
                 ${this.config && this.config.name}
               </div>
               <div class="grid__col grid__col--1-of-6 svg-icon">
-                ${ICONS[stateObj.state].svg}
+                ${icon(stateObj.state, 24)}
               </div>
               <div class="grid__col grid__col--1-of-6">
                 ${stateObj.attributes.boiler == 'On'
                   ? html`
-                      <ha-icon style="width: 30px; height: 30px; color: #ff3300;" icon="hass:water-boiler"></ha-icon>
+                      <ha-icon style="width: 30px; height: 30px; color: #ff811a;" icon="hass:water-boiler"></ha-icon>
                     `
                   : ''}
               </div>
@@ -197,7 +207,7 @@ export class WiserHomeCard extends LitElement {
     ];
   }
 
-  private boostHandler() {
+  private boostHandler(): void {
     console.log('Boost handlers');
   }
 }

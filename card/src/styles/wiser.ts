@@ -66,6 +66,12 @@ export class Wiser implements Style {
         color: #ff0000;
         font-size: 20px;
       }
+      .heating svg {
+        fill: #ff811a;
+      }
+      .manual svg {
+        fill: #109999;
+      }
       .align-right {
         text-align: right;
       }
@@ -81,6 +87,18 @@ export class Wiser implements Style {
         position: absolute;
         right: -5px;
         top: 15px;
+      }
+      .svg-icon svg {
+        position: relative;
+        top: 0%;
+        -webkit-transform: perspective(1px) translateY(-20%);
+        -ms-transform: perspective(1px) translateY(-20%);
+        transform: perspective(1px) translateY(-20%);
+      }
+      .fallback {
+        display: none;
+      }
+      .no-svg .fallback {
       }
     `;
   }
