@@ -95,6 +95,7 @@ class Room:
         self._valves = Valves(valves={v.entity_id: v.weight for v in valves})
         self._valve_boost_timer_remove = None
         self._room_boost_timer_remove = None
+        self.boost_ticks = 0
         self._state = Auto()
         self._temp_lock = asyncio.Lock()
         if not self.schedule.rules:   # Create default rules
@@ -205,7 +206,8 @@ class Room:
             "setpoint": self._setpoint if self._setpoint > 5 else OFF_VALUE,
             "heating": self._heating,
             "valve_boost": boost,
-            "manual": isinstance(self._state, Manual)
+            "manual": isinstance(self._state, Manual),
+            "boost_ticks": self.boost_ticks
         }
 
     @callback
@@ -265,6 +267,7 @@ class Room:
                         self.async_valve_boost_end,
                         datetime.timedelta(hours=1))
                     await self._async_determine_heating(as_local(datetime.datetime.now()))
+                    self.boost_ticks = 121
         await self._async_send_set_point(entity_id)
         # TODO Add a send lock!
 
@@ -286,6 +289,9 @@ class Room:
         :return:
         """
         _log.debug("async_tick")
+        if self.boost_ticks > 0:
+            self.boost_ticks = self.boost_ticks - 1
+            _log.debug("boost_ticks %d", self.boost_ticks)
         await self._async_determine_heating(time)
 
     async def _async_cancel_boost_timer(self):
@@ -383,6 +389,7 @@ class Room:
             self._valve_boost_timer_remove()
         self._valve_boost_timer_remove = None
         self._state = self._state.on_event(Event.AUTO)
+        self._valves.end_boost()
         await self._async_determine_heating(as_local(datetime.datetime.now()))
 
     async def async_room_boost_end(self, *args):
@@ -518,8 +525,11 @@ class Valves:
                     self._valve_boost_temp = vale_setpoint
                     self._valve_boost_dir = "-"
                     return
-            self._valve_boost_temp = self._room_temp
-            self._valve_boost_dir = 0
+
+    @callback
+    def end_boost(self):
+        self._valve_boost_temp = self._room_temp
+        self._valve_boost_dir = 0
 
     @callback
     def waiting_synch(self):
