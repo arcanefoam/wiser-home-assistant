@@ -11,6 +11,10 @@ module.exports = {
         experimentalDecorators: true,
     },
     rules: {
-        "@typescript-eslint/camelcase": 0
+        "@typescript-eslint/camelcase": 0,
+        "max-len": ["error", {
+            "code": 120,
+            "ignoreTemplateLiterals": true,
+            "ignoreStrings": true } ]
     }
 };

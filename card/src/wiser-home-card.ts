@@ -32,6 +32,8 @@ const debug = true;
 
 @customElement('wiser-home-card')
 export class WiserHomeCard extends LitElement {
+  private ticks1 = 120;
+  private ticks2 = 45;
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     return document.createElement('wiser-home-card-editor') as LovelaceCardEditor;
   }
@@ -91,6 +93,14 @@ export class WiserHomeCard extends LitElement {
     const rooms = stateObj.attributes.rooms;
 
     if (debug) {
+      this.ticks1 -= 10;
+      if (this.ticks1 < 0) {
+        this.ticks1 = 120;
+      }
+      this.ticks2 -= 10;
+      if (this.ticks2 < 0) {
+        this.ticks2 = 120;
+      }
       let room = {
         heating: false,
         manual: true,
@@ -98,6 +108,7 @@ export class WiserHomeCard extends LitElement {
         setpoint: '16',
         temperature: 20,
         valve_boost: '+',
+        boost_ticks: this.ticks1,
       };
       rooms.push(room);
       room = {
@@ -107,6 +118,7 @@ export class WiserHomeCard extends LitElement {
         setpoint: '26.5',
         temperature: 28.6,
         valve_boost: '-',
+        boost_ticks: this.ticks2,
       };
       rooms.push(room);
       room = {
@@ -116,6 +128,7 @@ export class WiserHomeCard extends LitElement {
         setpoint: '22',
         temperature: 15.8,
         valve_boost: '0',
+        boost_ticks: 0,
       };
       rooms.push(room);
       stateObj.attributes.boiler = 'On';
@@ -146,9 +159,11 @@ export class WiserHomeCard extends LitElement {
               <div class="grid__col grid__col--1-of-6">
                 ${stateObj.attributes.boiler == 'On'
                   ? html`
-                      <ha-icon style="width: 30px; height: 30px; color: #ff811a;" icon="hass:water-boiler"></ha-icon>
+                      <ha-icon style="width: 30px; height: 30px;" icon="hass:radiator"></ha-icon>
                     `
-                  : ''}
+                  : html`
+                      <ha-icon style="width: 30px; height: 30px;" icon="hass:radiator-disabled"></ha-icon>
+                    `}
               </div>
               <div class="grid__col grid__col--2-of-6 boost">
                 Boost <mwc-switch @click=${this.boostHandler()} style="position: relative;"></mwc-switch>
@@ -169,6 +184,7 @@ export class WiserHomeCard extends LitElement {
                       ?heating="${item.heating}"
                       ?manual="${item.manual}"
                       boost="${item.valve_boost}"
+                      boost_ticks="${item.boost_ticks}"
                     ></wiser-room-digest>
                   `;
                 })}

@@ -14,7 +14,7 @@ export class Wiser implements Style {
       }
       .current {
         font-weight: 300;
-        font-size: 30px;
+        font-size: 25px;
         padding-right: 15px;
       }
       .room {
@@ -57,14 +57,6 @@ export class Wiser implements Style {
         display: inline-block;
         vertical-align: middle;
         text-align: right;
-      }
-      .boostup {
-        color: #0000ff;
-        font-size: 20px;
-      }
-      .boostdown {
-        color: #ff0000;
-        font-size: 20px;
       }
       .heating svg {
         fill: #ff811a;
