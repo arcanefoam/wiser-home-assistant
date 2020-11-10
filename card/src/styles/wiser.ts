@@ -62,7 +62,7 @@ export class Wiser implements Style {
         fill: #ff811a;
       }
       .manual svg {
-        fill: #109999;
+        fill: #44739e;
       }
       .align-right {
         text-align: right;

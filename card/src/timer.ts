@@ -25,7 +25,7 @@ export class BoostTimer extends LitElement {
   @property() public boost_ticks = 0;
 
   // Update the dasharray value as time passes, starting with FULL_DASH_ARRAY (283) function
-  circleDasharray() {
+  circleDasharray(): string {
     return `${((this.boost_ticks / 120) * FULL_DASH_ARRAY).toFixed(0)} 283`;
   }
 
@@ -104,8 +104,8 @@ export class BoostTimer extends LitElement {
         transform: rotate(90deg);
         transform-origin: center;
 
-        /* One second aligns with the speed of the countdown timer */
-        transition: 1s linear all;
+        /* 60 seconds aligns with the speed of the countdown*/
+        transition: 60s linear all;
 
         /* Allows the ring to change color when the color value updates */
         stroke: currentColor;
