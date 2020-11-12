@@ -6,6 +6,7 @@ import logging
 from collections import namedtuple
 import datetime
 from enum import Enum, auto
+import sys
 from pprint import pprint
 
 from homeassistant.components.climate.const import (
@@ -207,7 +208,8 @@ class Room:
             "heating": self._heating,
             "valve_boost": boost,
             "manual": isinstance(self._state, Manual),
-            "boost_ticks": self.boost_ticks
+            "boost_ticks": self.boost_ticks,
+            "state": self._state.__str__()
         }
 
     @callback
@@ -248,17 +250,34 @@ class Room:
                 return True
         return False
 
+    async def restore(self, attributes):
+        _log.debug("restore")
+        for room in attributes['rooms']:
+            if room['name'] == self._name:
+                self._setpoint = room['setpoint']
+                self._heating = room['heating']
+                self.boost_ticks = room['boost_ticks']
+                self._state = getattr(sys.modules[__name__], room['state'])()
+                self._valves.restore(room['setpoint'], room['valve_boost'])
+                if isinstance(self._state, ValveBoost):         # TODO RoomBoost
+                    self.boost_ticks = self.boost_ticks + 1
+                    self._valve_boost_timer_remove = async_track_time_interval(
+                        self._hass,
+                        self.async_valve_boost_end,
+                        datetime.timedelta(minutes=self.boost_ticks))
+                    await self._async_determine_heating(as_local(datetime.datetime.now()))
+                return
+
     async def _async_valve_state_change(self, entity_id: str, old_state: State, new_state: State) -> None:
         """ Handle TRV state changes.
             We only care if three attributes changed: local_temperature, occupied_heating_setpoint and boost
         """
         if (new_state is None) or (old_state is None):
             return
-        _log.debug("state_change %s", self.state_change(old_state, new_state))
+        _log.debug("_async_valve_state_change %s", self._setpoint)
         if self.state_change(old_state, new_state):
             if self._valves.update_state(entity_id, new_state):
-                self._valves.detect_boost(entity_id, self._setpoint)
-                if self.valve_boost:
+                if self._valves.detect_boost(entity_id, self._setpoint):
                     _log.info("Room %s has valve boost", self.name)
                     await self._async_cancel_boost_timer()
                     self._state = self._state.on_event(Event.VALVE_BOOST)
@@ -267,7 +286,7 @@ class Room:
                         self.async_valve_boost_end,
                         datetime.timedelta(hours=1))
                     await self._async_determine_heating(as_local(datetime.datetime.now()))
-                    self.boost_ticks = 121
+                    self.boost_ticks = 60
         await self._async_send_set_point(entity_id)
         # TODO Add a send lock!
 
@@ -384,7 +403,7 @@ class Room:
         Listener for ending the valve boost.
         :param kwargs: other event values
         """
-        _log.info("Room %s boost end", self)
+        _log.info("Room [%s] boost end", self)
         if self._valve_boost_timer_remove is not None:
             self._valve_boost_timer_remove()
         self._valve_boost_timer_remove = None
@@ -430,6 +449,15 @@ class Valves:
     @property
     def room_temp(self):
         return self._room_temp
+
+    @callback
+    def restore(self, setpoint, valve_boost):
+        _log.debug("valves restore")
+        for t_id in self._valves:
+            self._valve_set_point[t_id] = setpoint
+        self._valve_boost_temp = setpoint
+        self._valve_boost_dir = valve_boost
+        _log.debug("valves restore %s, %s", self._valve_boost_temp, self._valve_boost_dir)
 
     @callback
     def update_state(self, entity_id, state):
@@ -513,18 +541,19 @@ class Valves:
                            self._valve_boost[entity_id])
                 # If delta is 0, there is no change
                 if delta == 0:
-                    return
+                    return False
                 # Valve boost is 2°
                 if delta < -1.5 and self._valve_boost[entity_id] == "Up":
                     _log.debug("%s BOOST UP", entity_id)
                     self._valve_boost_temp = vale_setpoint
                     self._valve_boost_dir = "+"
-                    return
+                    return True
                 elif delta > 1.5 and self._valve_boost[entity_id] == "Down":
                     _log.debug("%s BOOST DOWN", entity_id)
                     self._valve_boost_temp = vale_setpoint
                     self._valve_boost_dir = "-"
-                    return
+                    return True
+        return False
 
     @callback
     def end_boost(self):
@@ -564,7 +593,7 @@ class RoomState(object):
         """
         Handle events that are delegated to this State.
         """
-        pass
+        _log.debug('State on_event %s', event)
 
     async def setpoint(self, room, time):
         """
@@ -595,6 +624,7 @@ class Auto(RoomState):
     """
 
     def on_event(self, event):
+        super().on_event(event)
         if event == Event.AWAY_ON:
             return Away()
         elif event == Event.BOOST_ALL:
@@ -624,15 +654,13 @@ class Away(RoomState):
     """
 
     def on_event(self, event):
+        super().on_event(event)
         if event == Event.AWAY_OFF:
             return Auto()
         return self
 
     async def setpoint(self, room, time):
         return room.away_temp
-
-    def allow_valve_boost(self):
-        return False
 
 
 class HouseBoost(RoomState):
@@ -641,6 +669,7 @@ class HouseBoost(RoomState):
     """
 
     def on_event(self, event):
+        super().on_event(event)
         if event == Event.CANCEL_ALL:
             return Auto()
         elif event == Event.VALVE_BOOST:
@@ -661,6 +690,7 @@ class ValveBoost(RoomState):
     """
 
     def on_event(self, event):
+        super().on_event(event)
         if event == Event.AUTO:
             return Auto()
         elif event == Event.MANUAL:
@@ -677,6 +707,7 @@ class Manual(RoomState):
     """
 
     def on_event(self, event):
+        super().on_event(event)
         if event == Event.AWAY_ON:
             return Away()
         elif event == Event.MANUAL:
@@ -697,6 +728,7 @@ class RoomBoost(RoomState):
     """
 
     def on_event(self, event):
+        super().on_event(event)
         if event == Event.AUTO:
             return Auto()
         elif event == Event.VALVE_BOOST:

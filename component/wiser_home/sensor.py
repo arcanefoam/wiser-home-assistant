@@ -41,7 +41,7 @@ from .const import (
 )
 from .config import parse_rooms, CONFIG_SCHEMA
 
-_LOGGER = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     CONFIG_SCHEMA
@@ -158,10 +158,21 @@ class WiserHome(RestoreEntity):
         # Add listener for each thermostat
         for room in self.rooms:
             room.track_valves(self.hass)
-        # Add a time internal to evaluate schedules
-        self._attributes['boiler'] = 'Off'
-        self._attributes['away_temp'] = self._away_temp
-        self._attributes['boost'] = self._boost_all
+        state = await self.async_get_last_state()
+        if not state:
+            self._attributes['boiler'] = 'Off'
+            self._attributes['away_temp'] = self._away_temp
+            self._attributes['boost'] = self._boost_all
+        else:
+            _log.debug("async_added_to_hass last_state %s", state)
+            if 'boiler' in state.attributes:
+                # Restore state
+                self._attributes['boiler'] = state.attributes['boiler']
+                self._attributes['away_temp'] = state.attributes['away_temp']
+                self._attributes['boost'] = state.attributes['boost']
+                for room in self.rooms:
+                    await room.restore(state.attributes)
+
         async_track_time_interval(self.hass, self._async_control_heater, datetime.timedelta(minutes=SCHEDULE_INTERVAL))
 
     async def _async_control_heater(self, time, away=False):
@@ -177,10 +188,10 @@ class WiserHome(RestoreEntity):
 
         self._attributes['rooms'] = [room.attributes() for room in self.rooms]
         if any(room.demands_heat() for room in self.rooms):
-            _LOGGER.debug("At least one room needs heat, setting boiler on")
+            _log.debug("At least one room needs heat, setting boiler on")
             await self._async_heater_turn_on()
         else:
-            _LOGGER.debug("No room needs heat, setting boiler off")
+            _log.debug("No room needs heat, setting boiler off")
             await self._async_heater_turn_off()
 
     async def _async_heater_turn_on(self):
@@ -201,7 +212,7 @@ class WiserHome(RestoreEntity):
         if temperature is None:
             return
         self._away_temp = temperature
-        _LOGGER.debug("Wiser Home away temp set to %s", temperature)
+        _log.debug("Wiser Home away temp set to %s", temperature)
         self._attributes['away_temp'] = self._away_temp
         if self._away:
             await self._async_control_heater(time=datetime.datetime.now(), away=True)
