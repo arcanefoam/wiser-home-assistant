@@ -28,7 +28,7 @@ console.info(
   'color: white; font-weight: bold; background: dimgray',
 );
 
-const debug = true;
+const debug = false;
 
 @customElement('wiser-home-card')
 export class WiserHomeCard extends LitElement {

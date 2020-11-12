@@ -26,7 +26,7 @@ export class BoostTimer extends LitElement {
 
   // Update the dasharray value as time passes, starting with FULL_DASH_ARRAY (283) function
   circleDasharray(): string {
-    return `${((this.boost_ticks / 120) * FULL_DASH_ARRAY).toFixed(0)} 283`;
+    return `${((this.boost_ticks / 60) * FULL_DASH_ARRAY).toFixed(0)} 283`;
   }
 
   protected render(): TemplateResult | void {
