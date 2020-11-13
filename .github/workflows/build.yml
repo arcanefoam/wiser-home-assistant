@@ -10,13 +10,27 @@ on:
 
 jobs:
   build:
-    name: Test build
+    name: Build Card
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - name: Use Node.js
+          uses: actions/setup-node@v1
+          with:
+            node-version: '12.x'
+      - name: Cache Node.js modules
+        uses: actions/cache@v2
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+            ${{ runner.OS }}-
+      - name: Install dependencies
+        working-directory: ./card
+        run: yarn --frozen-lockfile
       - name: Build
-        run: |
-          npm install
-          npm run build
-        working-directory: ./card  
+        working-directory: ./card
+        run: npm run build
