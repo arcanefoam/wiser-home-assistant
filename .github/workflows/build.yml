@@ -28,6 +28,12 @@ jobs:
           restore-keys: |
             ${{ runner.OS }}-node-
             ${{ runner.OS }}-
+      - name: Find and Replace registry
+        uses: jacobtomlinson/gha-find-replace@0.1.2
+        with:
+          find: "http://172.16.46.46:8081/repository/npm-group/"
+          replace: "https://registry.npmjs.org/"
+          include: "yarn.lock"
       - name: Install dependencies
         working-directory: ./card
         run: yarn --frozen-lockfile
