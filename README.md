@@ -2,7 +2,7 @@
 
 This project provides a custom Home Assistant component for [Wiser Home](https://wiser.draytoncontrols.co.uk/support-getting-started) multi-zone heating and an accompanying Lovelave Card.
 
-[![GitHub Release][releases-shield]][releases]
+![Build](https://github.com/arcanefoam/wiser-home-assistant/workflows/Build/badge.svg)
 [![License][license-shield]](LICENSE)
 
 ## Requirements
