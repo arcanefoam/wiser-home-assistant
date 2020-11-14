@@ -56,7 +56,7 @@ jobs:
         with:
           name: card
       - shell: bash
-        run: cp -ar /component/wiser_home /dist/wiser_home
+        run: cp -ar component/wiser_home dist/wiser_home
       - name: Zip Folder
         run: zip -r release.zip dist
       - name: Release to Github
