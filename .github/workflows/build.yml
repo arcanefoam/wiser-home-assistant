@@ -55,6 +55,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: card
+          path: dist
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: dist
+      - name: Guide
+        run: ls -R     
       - shell: bash
         run: cp -ar component/wiser_home dist/wiser_home
       - name: Zip Folder
