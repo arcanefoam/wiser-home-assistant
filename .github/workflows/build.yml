@@ -41,10 +41,10 @@ jobs:
         working-directory: ./card
         run: npm run build
       - name: Archive card JavaScript
-          uses: actions/upload-artifact@v2
-          with:
-            name: card
-            path: dist/www
+        uses: actions/upload-artifact@v2
+        with:
+          name: card
+          path: dist/www
   package:
     name: Package for distribution
     needs: card
@@ -56,11 +56,11 @@ jobs:
         with:
           name: card
       - shell: bash
-          run: cp -ar /component/wiser_home /dist/wiser_home
+        run: cp -ar /component/wiser_home /dist/wiser_home
       - name: Zip Folder
-          run: zip -r release.zip dist
+        run: zip -r release.zip dist
       - name: Release to Github
-          run: echo "Release"
+        run: echo "Release"
 #  release:
 #    name: Upload Release Asset
 #    runs-on: ubuntu-latest
