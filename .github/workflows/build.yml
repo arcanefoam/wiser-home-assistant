@@ -10,7 +10,7 @@ on:
 
 jobs:
   card:
-    name: Build Card
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -37,14 +37,17 @@ jobs:
       - name: Install dependencies
         working-directory: ./card
         run: yarn --frozen-lockfile
-      - name: Build
+      - name: Build Card
         working-directory: ./card
         run: npm run build
-      - name: Archive card JavaScript
+      - name: Copy component
+        run: rsync -avr --exclude='*_test.py' component/wiser_home/ dist/wiser_home
+      - name: Upload dist
         uses: actions/upload-artifact@v2
         with:
-          name: card
-          path: dist/www
+          name: bundle
+          path: dist
+
   package:
     name: Package for distribution
     needs: card
@@ -60,9 +63,7 @@ jobs:
         run: ls -R
         working-directory: dist
       - name: Guide
-        run: ls -R     
-      - shell: bash
-        run: cp -ar component/wiser_home dist/wiser_home
+        run: ls -R
       - name: Zip Folder
         run: zip -r release.zip dist
       - name: Release to Github
