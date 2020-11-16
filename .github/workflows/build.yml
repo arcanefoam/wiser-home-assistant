@@ -41,7 +41,7 @@ jobs:
         working-directory: ./card
         run: npm run build
       - name: Copy component
-        run: rsync -avr --exclude='*_test.py' component/wiser_home/ dist/wiser_home
+        run: rsync -avr --exclude='*_test.py' component/wiser_home/ dist/custom_components/wiser_home
       - name: Upload dist
         uses: actions/upload-artifact@v2
         with:
@@ -57,7 +57,7 @@ jobs:
       - name: Download card
         uses: actions/download-artifact@v2
         with:
-          name: card
+          name: bundle
           path: dist
       - name: Display structure of downloaded files
         run: ls -R
