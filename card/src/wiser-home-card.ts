@@ -78,7 +78,7 @@ export class WiserHomeCard extends LitElement {
       `;
     }
 
-    const stateObj = this.hass.states[this.config.entity!];
+    const stateObj = this.config.entity != null ? this.hass.states[this.config.entity] : null;
     if (!stateObj) {
       return html`
         <hui-warning
