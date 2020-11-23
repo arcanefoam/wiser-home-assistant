@@ -1,4 +1,6 @@
 import { css, CSSResult, customElement, html, LitElement, property, TemplateResult } from 'lit-element';
+import * as dayjs_ from 'dayjs';
+const dayjs = dayjs_;
 
 const boostClass = {
   '+': {
@@ -22,11 +24,16 @@ const FULL_DASH_ARRAY = 283;
 @customElement('wiser-boost-timer')
 export class BoostTimer extends LitElement {
   @property() public direction = '';
-  @property() public boost_ticks = 0;
+  @property() public boost_end: dayjs_.Dayjs | null = null;
 
   // Update the dasharray value as time passes, starting with FULL_DASH_ARRAY (283) function
   circleDasharray(): string {
-    return `${((this.boost_ticks / 60) * FULL_DASH_ARRAY).toFixed(0)} 283`;
+    if (this.boost_end == null) {
+      return `${FULL_DASH_ARRAY} 283`;
+    }
+    const now = dayjs();
+    const diff = now.diff(this.boost_end, 'm');
+    return `${((diff / 60) * FULL_DASH_ARRAY).toFixed(0)} 283`;
   }
 
   protected render(): TemplateResult | void {

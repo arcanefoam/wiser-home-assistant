@@ -40,7 +40,7 @@ export class RoomDigest extends LitElement {
   @property({ type: Boolean }) public heating = false;
   @property({ type: Boolean }) public manual = false;
   @property() public boost = 0;
-  @property() public boost_ticks = 0;
+  @property() public boost_end = 0;
 
   protected render(): TemplateResult | void {
     return html`
@@ -73,7 +73,7 @@ export class RoomDigest extends LitElement {
             ${this.boost != 0
               ? html`
                   <div class="grid__col grid__col--2-of-12 align-center">
-                    <wiser-boost-timer direction="${this.boost}" boost_ticks="${this.boost_ticks}"></wiser-boost-timer>
+                    <wiser-boost-timer direction="${this.boost}" boost_end="${this.boost_end}"></wiser-boost-timer>
                   </div>
                 `
               : html`

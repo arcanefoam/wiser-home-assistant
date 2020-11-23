@@ -20,6 +20,8 @@ import { Toast } from './styles/toast';
 import './room';
 import { Header } from './styles/header';
 import { icon } from './icons';
+import * as dayjs_ from 'dayjs';
+const dayjs = dayjs_;
 
 /* eslint no-console: 0 */
 console.info(
@@ -32,8 +34,13 @@ const debug = false;
 
 @customElement('wiser-home-card')
 export class WiserHomeCard extends LitElement {
-  private ticks1 = 120;
-  private ticks2 = 45;
+  constructor(private ticks1: dayjs_.Dayjs, private ticks2: dayjs_.Dayjs) {
+    super();
+    const now = dayjs();
+    this.ticks1 = now.add(1, 'h');
+    this.ticks2 = now.add(30, 'm');
+  }
+
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     return document.createElement('wiser-home-card-editor') as LovelaceCardEditor;
   }
@@ -93,13 +100,13 @@ export class WiserHomeCard extends LitElement {
     const rooms = stateObj.attributes.rooms;
 
     if (debug) {
-      this.ticks1 -= 10;
-      if (this.ticks1 < 0) {
-        this.ticks1 = 120;
+      const now = dayjs();
+      //this.ticks1 = new Date(now.getTime() + 60 * 60000);
+      if (this.ticks1.isBefore(now)) {
+        this.ticks1 = now.add(1, 'h');
       }
-      this.ticks2 -= 10;
-      if (this.ticks2 < 0) {
-        this.ticks2 = 120;
+      if (this.ticks2.isBefore(now)) {
+        this.ticks2 = now.add(30, 'm');
       }
       let room = {
         heating: false,
@@ -108,7 +115,7 @@ export class WiserHomeCard extends LitElement {
         setpoint: '16',
         temperature: 20,
         valve_boost: '+',
-        boost_ticks: this.ticks1,
+        boost_end: this.ticks1,
       };
       rooms.push(room);
       room = {
@@ -118,7 +125,7 @@ export class WiserHomeCard extends LitElement {
         setpoint: '26.5',
         temperature: 28.6,
         valve_boost: '-',
-        boost_ticks: this.ticks2,
+        boost_end: this.ticks2,
       };
       rooms.push(room);
       room = {
@@ -128,7 +135,7 @@ export class WiserHomeCard extends LitElement {
         setpoint: '22',
         temperature: 15.8,
         valve_boost: '0',
-        boost_ticks: 0,
+        boost_end: now,
       };
       rooms.push(room);
       stateObj.attributes.boiler = 'On';
@@ -184,7 +191,7 @@ export class WiserHomeCard extends LitElement {
                       ?heating="${item.heating}"
                       ?manual="${item.manual}"
                       boost="${item.valve_boost}"
-                      boost_ticks="${item.boost_ticks}"
+                      boost_end="${item.boost_end}"
                     ></wiser-room-digest>
                   `;
                 })}

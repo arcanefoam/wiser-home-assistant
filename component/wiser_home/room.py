@@ -28,7 +28,7 @@ from .const import (
     CONF_WEEKDAYS,
     DEFAULT_AWAY_TEMP,
     OFF_VALUE,
-    SCHEDULE_INTERVAL,
+    VALVE_EVENTS_THROTTLE,
     TEMP_HYSTERESIS,
 )
 from .schedule import Schedule, Rule
@@ -96,7 +96,8 @@ class Room:
         self._valves = Valves(valves={v.entity_id: v.weight for v in valves})
         self._valve_boost_timer_remove = None
         self._room_boost_timer_remove = None
-        self.boost_ticks = 0
+        self._boost_end = None
+        self._event_cnt = 0
         self._state = Auto()
         self._temp_lock = asyncio.Lock()
         if not self.schedule.rules:   # Create default rules
@@ -208,7 +209,7 @@ class Room:
             "heating": self._heating,
             "valve_boost": boost,
             "manual": isinstance(self._state, Manual),
-            "boost_ticks": self.boost_ticks,
+            "boost_end": self._boost_end if self._boost_end is None else self._boost_end.isoformat(),
             "state": self._state.__str__()
         }
 
@@ -256,15 +257,19 @@ class Room:
             if room['name'] == self._name:
                 self._setpoint = room['setpoint']
                 self._heating = room['heating']
-                self.boost_ticks = room['boost_ticks']
+                if room['boost_end'] is None:
+                    self._boost_end = datetime.now()
+                else:
+                    self._boost_end = datetime.datetime.strptime(room['boost_end'], "%Y-%m-%dT%H:%M:%S%z")
                 self._state = getattr(sys.modules[__name__], room['state'])()
                 self._valves.restore(room['setpoint'], room['valve_boost'])
+                now = datetime.now()
+                duration_in_s = (now - self._boost_end).total_seconds()
                 if isinstance(self._state, ValveBoost):         # TODO RoomBoost
-                    self.boost_ticks = self.boost_ticks + 1
                     self._valve_boost_timer_remove = async_track_time_interval(
                         self._hass,
                         self.async_valve_boost_end,
-                        datetime.timedelta(minutes=self.boost_ticks))
+                        datetime.timedelta(minutes=divmod(duration_in_s, 60)[0]))
                     await self._async_determine_heating(as_local(datetime.datetime.now()))
                 return
 
@@ -286,8 +291,11 @@ class Room:
                         self.async_valve_boost_end,
                         datetime.timedelta(hours=1))
                     await self._async_determine_heating(as_local(datetime.datetime.now()))
-                    self.boost_ticks = 60
-        await self._async_send_set_point(entity_id)
+                    self._boost_end = datetime.now() + datetime.timedelta(hours=1)
+            if self._event_cnt % VALVE_EVENTS_THROTTLE == 0:
+                self._event_cnt = 0
+                await self._async_send_set_point(entity_id)
+            self._event_cnt = self._event_cnt + 1
         # TODO Add a send lock!
 
     async def _async_send_set_point(self, entity_id):
@@ -308,9 +316,6 @@ class Room:
         :return:
         """
         _log.debug("async_tick")
-        if self.boost_ticks > 0:
-            self.boost_ticks = self.boost_ticks - 1
-            _log.debug("boost_ticks %d", self.boost_ticks)
         await self._async_determine_heating(time)
 
     async def _async_cancel_boost_timer(self):

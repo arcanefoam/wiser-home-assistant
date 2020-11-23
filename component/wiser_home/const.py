@@ -4,9 +4,10 @@ DOMAIN = "wiser_home"
 DEFAULT_NAME = "Wiser Home"
 DEFAULT_TOLERANCE = 0.3
 OFF_VALUE = "OFF"
-SCHEDULE_INTERVAL = 1
+SCHEDULE_INTERVAL = 1   # 1 minute seems to frequent. Maybe even 10 is enough, a 10 min error in a schedule is not bad?
 TEMP_HYSTERESIS = 0.5
 DEFAULT_AWAY_TEMP = 16
+VALVE_EVENTS_THROTTLE = 10
 
 CONF_AT_STARTUP = "reset_at_startup"
 CONF_BOILER = "boiler"
