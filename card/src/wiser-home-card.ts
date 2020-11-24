@@ -29,7 +29,7 @@ console.info(
   'color: white; font-weight: bold; background: dimgray',
 );
 
-const debug = false;
+const debug = true;
 
 @customElement('wiser-home-card')
 export class WiserHomeCard extends LitElement {
@@ -110,7 +110,7 @@ export class WiserHomeCard extends LitElement {
       let room = {
         heating: false,
         manual: true,
-        name: 'kitchen',
+        name: 'caliente',
         setpoint: '16',
         temperature: 20,
         valve_boost: '+',
@@ -120,7 +120,7 @@ export class WiserHomeCard extends LitElement {
       room = {
         heating: true,
         manual: false,
-        name: 'office',
+        name: 'frio',
         setpoint: '26.5',
         temperature: 28.6,
         valve_boost: '-',
@@ -130,7 +130,7 @@ export class WiserHomeCard extends LitElement {
       room = {
         heating: true,
         manual: true,
-        name: 'living room',
+        name: 'manual',
         setpoint: '22',
         temperature: 15.8,
         valve_boost: '0',

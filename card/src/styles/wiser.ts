@@ -15,7 +15,8 @@ export class Wiser implements Style {
       .current {
         font-weight: 300;
         font-size: 25px;
-        padding-right: 15px;
+        padding-right: 0.6em;
+        padding-left: 0.4em
       }
       .room {
         padding: 5px;

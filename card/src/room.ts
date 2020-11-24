@@ -79,7 +79,7 @@ export class RoomDigest extends LitElement {
               : html`
                   <div class="grid__col grid__col--2-of-12"></div>
                 `}
-            <div class="grid__col grid__col--3-of-12 current align-right">${this.temperature} °</div>
+            <div class="grid__col grid__col--3-of-12 current align-right">${this.temperature}°</div>
           </div>
         </div>
       </div>

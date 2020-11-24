@@ -338,14 +338,14 @@ export class Toast implements Style {
         padding-left: 1.25em;
         vertical-align: top;
       }
-      @media (max-width: 700px) {
+      /*@media (max-width: 700px) {
         .grid__col {
           display: block;
           margin-left: 0;
           margin-right: 0;
           width: auto;
         }
-      }
+      }*/
       @media (max-width: 700px) and (min-width: 480px) {
         .grid__col[class*='grid__col--m-'] {
           display: inline-block;
