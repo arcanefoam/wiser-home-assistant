@@ -257,14 +257,18 @@ class Room:
             if room['name'] == self._name:
                 self._setpoint = room['setpoint']
                 self._heating = room['heating']
+                now = datetime.datetime.now()
                 if room['boost_end'] is None:
-                    self._boost_end = datetime.now()
+                    self._boost_end = now
                 else:
-                    self._boost_end = datetime.datetime.strptime(room['boost_end'], "%Y-%m-%dT%H:%M:%S%z")
+                    self._boost_end = datetime.datetime.strptime(room['boost_end'], "%Y-%m-%dT%H:%M:%S.%f")
                 self._state = getattr(sys.modules[__name__], room['state'])()
                 self._valves.restore(room['setpoint'], room['valve_boost'])
-                now = datetime.now()
-                duration_in_s = (now - self._boost_end).total_seconds()
+                duration_in_s = (self._boost_end - now).total_seconds()
+                if duration_in_s < 0:
+                    duration_in_s = 0
+                _log.debug("restore boost end %s: %s", self._name, self._boost_end)
+                _log.debug("restore boost duration %s: %s", self._name, divmod(duration_in_s, 60)[0])
                 if isinstance(self._state, ValveBoost):         # TODO RoomBoost
                     self._valve_boost_timer_remove = async_track_time_interval(
                         self._hass,
@@ -291,7 +295,8 @@ class Room:
                         self.async_valve_boost_end,
                         datetime.timedelta(hours=1))
                     await self._async_determine_heating(as_local(datetime.datetime.now()))
-                    self._boost_end = datetime.now() + datetime.timedelta(hours=1)
+                    self._boost_end = datetime.datetime.now() + datetime.timedelta(hours=1)
+                    _log.debug("boost end %s: %s -> %s", self._name, datetime.datetime.now(), self._boost_end)
             if self._event_cnt % VALVE_EVENTS_THROTTLE == 0:
                 self._event_cnt = 0
                 await self._async_send_set_point(entity_id)

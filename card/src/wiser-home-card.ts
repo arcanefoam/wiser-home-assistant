@@ -20,8 +20,7 @@ import { Toast } from './styles/toast';
 import './room';
 import { Header } from './styles/header';
 import { icon } from './icons';
-import * as dayjs_ from 'dayjs';
-const dayjs = dayjs_;
+import dayjs, { Dayjs } from 'dayjs';
 
 /* eslint no-console: 0 */
 console.info(
@@ -34,7 +33,7 @@ const debug = false;
 
 @customElement('wiser-home-card')
 export class WiserHomeCard extends LitElement {
-  constructor(private ticks1: dayjs_.Dayjs, private ticks2: dayjs_.Dayjs) {
+  constructor(private ticks1: Dayjs, private ticks2: Dayjs) {
     super();
     const now = dayjs();
     this.ticks1 = now.add(1, 'h');

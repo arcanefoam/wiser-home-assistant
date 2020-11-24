@@ -6,7 +6,7 @@ import { terser } from 'rollup-plugin-terser';
 import json from '@rollup/plugin-json';
 import copy from 'rollup-plugin-copy';
 
-const dev = process.env.ROLLUP_WATCH;
+const dev = process.env.ROLLUP_WATCH || process.env.ROLLUP_DEV;
 
 const serveopts = {
   contentBase: ['./dist'],
