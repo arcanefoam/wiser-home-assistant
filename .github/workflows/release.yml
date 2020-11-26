@@ -61,7 +61,7 @@ jobs:
         run: ls -R
         working-directory: dist
       - name: Zip Folder
-          run: zip -r wiser-home.zip dist
+        run: zip -r wiser-home.zip dist
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
