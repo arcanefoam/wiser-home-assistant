@@ -1,0 +1,15 @@
+{
+  "config": {
+    "title": "Wiser Thermostat",
+    "step": {
+      "confirm": {
+        "title": "Wiser Thermostat",
+        "description": "Do you want to set up Wiser Thermostat?"
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Only a single configuration of Wiser Thermostat is possible.",
+      "no_devices_found": "No Wiser Thermostat devices found on the network."
+    }
+  }
+}

@@ -1,0 +1,27 @@
+set_away_mode:
+  description: Sets the system to Away Mode
+  fields:
+    entity_id:
+      description: Name(s) of entities to change.
+      example: 'sensor.wiser_home'
+    away_mode:
+      description: Activate/desactivate (true/false) the away mode.
+      example: true
+set_away_temp:
+  description: Set the Away Mode temperature.
+  fields:
+    entity_id:
+      description: Name(s) of entities to change.
+      example: 'sensor.wiser_home'
+    temperature:
+      description: The new target temperature for the Wiser Home.
+      example: 25
+boost_all:
+  description: Boost All will apply a boost of +2°C for 1 hour
+  fields:
+cancel_overrides:
+  description: >
+    Cancel All overrides will put all heating back under 'system control' meaning that if you’ve selected
+    Boost All, or even if you’ve boosted or manually overridden a room setpoint individually, this will cancel the
+    override and put all rooms back to their scheduled setpoints.
+  fields:

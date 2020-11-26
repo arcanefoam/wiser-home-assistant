@@ -1,0 +1,13 @@
+{
+  "domain": "wiser_home",
+  "name": "Wiser Home",
+  "documentation": "https://github.com/arcanefoam/wiser-home-assistant",
+  "requirements": ["cached-property==1.5.1"],
+  "dependencies": [
+    "switch",
+    "climate"
+  ],
+  "codeowners": [
+    "@arcanefoam"
+  ]
+}

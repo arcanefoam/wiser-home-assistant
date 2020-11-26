@@ -138,7 +138,8 @@ class ActionHandler extends HTMLElement implements ActionHandler {
     // iOS 13 sends a complete normal touchstart-touchend series of events followed by a mousedown-click series.
     // That might be a bug, but until it's fixed, this should make action-handler work.
     // If it's not a bug that is fixed, this might need updating with the next iOS version.
-    // Note that all events (both touch and mouse) must be listened for in order to work on computers with both mouse and touchscreen.
+    // Note that all events (both touch and mouse) must be listened for in order to work on computers with both mouse
+    // and touchscreen.
     const isIOS13 = /iPhone OS 13_/.test(window.navigator.userAgent);
     if (!isIOS13) {
       element.addEventListener('mousedown', clickStart, { passive: true });

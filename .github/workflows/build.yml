@@ -3,18 +3,49 @@ name: "Build"
 on:
   push:
     branches: 
-      - master
+      - develop
   pull_request:
     branches: 
-      - master
+      - develop
 
 jobs:
-  build:
-    name: Test build
+  card:
+    name: Build
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v1
-      - name: Build
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: Cache Node.js modules
+        uses: actions/cache@v2
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+            ${{ runner.OS }}-
+      - name: Find and Replace registry
+        uses: jacobtomlinson/gha-find-replace@0.1.2
+        with:
+          find: "http://172.16.46.46:8081/repository/npm-group/"
+          replace: "https://registry.npmjs.org/"
+          include: "yarn.lock"
+      - name: Install dependencies
+        working-directory: ./card
+        run: yarn --frozen-lockfile
+      - name: Build Card
+        working-directory: ./card
+        run: npm run build
+      - name: Copy component
         run: |
-          npm install
-          npm run build
+          mkdir dist/custom_components
+          rsync -avr --exclude='*_test.py' component/wiser_home/ dist/custom_components/wiser_home
+      - name: Upload dist
+        uses: actions/upload-artifact@v2
+        with:
+          name: bundle
+          path: dist
