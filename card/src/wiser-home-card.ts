@@ -29,7 +29,7 @@ console.info(
   'color: white; font-weight: bold; background: dimgray',
 );
 
-const debug = true;
+const debug = false;
 
 @customElement('wiser-home-card')
 export class WiserHomeCard extends LitElement {
@@ -181,7 +181,6 @@ export class WiserHomeCard extends LitElement {
           ? html`
               <div class="card-content test">
                 ${rooms.map(item => {
-                  console.log('room', item);
                   return html`
                     <wiser-room-digest
                       name="${item.name}"

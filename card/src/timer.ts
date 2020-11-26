@@ -40,7 +40,6 @@ export class BoostTimer extends LitElement {
     }
     const now = dayjs();
     let diff = this.boost_end.diff(now, 'm');
-    console.log('circleDasharray', now, this.boost_end, diff);
     if (diff < 0) {
       diff = 0;
     }
