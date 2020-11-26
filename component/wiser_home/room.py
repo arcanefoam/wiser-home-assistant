@@ -253,29 +253,32 @@ class Room:
 
     async def restore(self, attributes):
         _log.debug("restore")
-        for room in attributes['rooms']:
-            if room['name'] == self._name:
-                self._setpoint = room['setpoint']
-                self._heating = room['heating']
-                now = datetime.datetime.now()
-                if room['boost_end'] is None:
-                    self._boost_end = now
-                else:
-                    self._boost_end = datetime.datetime.strptime(room['boost_end'], "%Y-%m-%dT%H:%M:%S.%f")
-                self._state = getattr(sys.modules[__name__], room['state'])()
-                self._valves.restore(room['setpoint'], room['valve_boost'])
-                duration_in_s = (self._boost_end - now).total_seconds()
-                if duration_in_s < 0:
-                    duration_in_s = 0
-                _log.debug("restore boost end %s: %s", self._name, self._boost_end)
-                _log.debug("restore boost duration %s: %s", self._name, divmod(duration_in_s, 60)[0])
-                if isinstance(self._state, ValveBoost):         # TODO RoomBoost
-                    self._valve_boost_timer_remove = async_track_time_interval(
-                        self._hass,
-                        self.async_valve_boost_end,
-                        datetime.timedelta(minutes=divmod(duration_in_s, 60)[0]))
-                    await self._async_determine_heating(as_local(datetime.datetime.now()))
-                return
+        try:
+            for room in attributes['rooms']:
+                if room['name'] == self._name:
+                    self._setpoint = room['setpoint']
+                    self._heating = room['heating']
+                    now = datetime.datetime.now()
+                    if room['boost_end'] is None:
+                        self._boost_end = now
+                    else:
+                        self._boost_end = datetime.datetime.strptime(room['boost_end'], "%Y-%m-%dT%H:%M:%S.%f")
+                    self._state = getattr(sys.modules[__name__], room['state'])()
+                    self._valves.restore(room['setpoint'], room['valve_boost'])
+                    duration_in_s = (self._boost_end - now).total_seconds()
+                    if duration_in_s < 0:
+                        duration_in_s = 0
+                    _log.debug("restore boost end %s: %s", self._name, self._boost_end)
+                    _log.debug("restore boost duration %s: %s", self._name, divmod(duration_in_s, 60)[0])
+                    if isinstance(self._state, ValveBoost):         # TODO RoomBoost
+                        self._valve_boost_timer_remove = async_track_time_interval(
+                            self._hass,
+                            self.async_valve_boost_end,
+                            datetime.timedelta(minutes=divmod(duration_in_s, 60)[0]))
+                        await self._async_determine_heating(as_local(datetime.datetime.now()))
+                    return
+        except KeyError:
+            _log.warning("No room information to restore")
 
     async def _async_valve_state_change(self, entity_id: str, old_state: State, new_state: State) -> None:
         """ Handle TRV state changes.
@@ -464,8 +467,8 @@ class Valves:
     def restore(self, setpoint, valve_boost):
         _log.debug("valves restore")
         for t_id in self._valves:
-            self._valve_set_point[t_id] = setpoint
-        self._valve_boost_temp = setpoint
+            self._valve_set_point[t_id] = int(setpoint)
+        self._valve_boost_temp = int(setpoint)
         self._valve_boost_dir = valve_boost
         _log.debug("valves restore %s, %s", self._valve_boost_temp, self._valve_boost_dir)
 

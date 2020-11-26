@@ -14,8 +14,8 @@ import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 from homeassistant.const import (
     CONF_NAME,
-    CONF_ENTITY_ID
-)
+    CONF_ENTITY_ID,
+    CONF_UNIQUE_ID)
 
 from . import schedule, util
 from .const import (
@@ -283,6 +283,7 @@ STATISTICAL_PARAMETER_BASE_SCHEMA = vol.Schema({vol.Required("type"): str}, extr
 
 CONFIG_SCHEMA = {
     vol.Required(CONF_BOILER): cv.entity_id,
+    vol.Required(CONF_UNIQUE_ID): str,
     vol.Required(CONF_ROOMS, default=dict): vol.All(
                     lambda v: v or {}, {util.CONF_STR_KEY: ROOM_SCHEMA}
                 ),

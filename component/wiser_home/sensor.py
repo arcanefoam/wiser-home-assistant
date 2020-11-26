@@ -13,7 +13,7 @@ from homeassistant.const import (
     ATTR_ENTITY_ID,
     SERVICE_TURN_OFF,
     SERVICE_TURN_ON,
-)
+    CONF_UNIQUE_ID)
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.config_validation import (
     make_entity_service_schema,
@@ -60,7 +60,8 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     name = config.get(CONF_NAME)
     boiler = config.get(CONF_BOILER)
     rooms = parse_rooms(config)
-    entity = WiserHome(name, boiler, rooms)
+    config_unique_id = config.get(CONF_UNIQUE_ID)
+    entity = WiserHome(name, config_unique_id, boiler, rooms)
     async_add_entities([entity])
 
     async def handle_away_temp_service(call):
@@ -89,6 +90,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         DOMAIN, SERVICE_BOOST_ALL, handle_boost_all_service, make_entity_service_schema({}))
     hass.services.async_register(
         DOMAIN, SERVICE_CANCEL_OVERRIDES, handle_cancel_overrides_service, make_entity_service_schema({}))
+    _log.debug("Sensor setup done")
     return True
 
 
@@ -117,10 +119,11 @@ class WiserHome(RestoreEntity):
 
     """
     
-    def __init__(self, name, boiler, rooms):
+    def __init__(self, name, config_unique_id, boiler, rooms):
         self._name = name
         self._mode = HeatingMode.AUTO
         self.boiler_entity_id = boiler
+        self._config_unique_id = config_unique_id
         self.rooms = rooms
         self._attributes = {}
         self._room_for_entity = {}
@@ -144,6 +147,11 @@ class WiserHome(RestoreEntity):
         return "mdi:power"
 
     @property
+    def unique_id(self) -> str:
+        """Return a unique ID containing latitude/longitude."""
+        return self._config_unique_id
+
+    @property
     def device_state_attributes(self):
         """Return attributes for the sensor."""
         return self._attributes
@@ -163,6 +171,8 @@ class WiserHome(RestoreEntity):
             self._attributes['boiler'] = 'Off'
             self._attributes['away_temp'] = self._away_temp
             self._attributes['boost'] = self._boost_all
+            self._attributes['mode'] = self._mode
+            #self._mode = HeatingMode.AUTO
         else:
             _log.debug("async_added_to_hass last_state %s", state)
             if 'boiler' in state.attributes:
@@ -170,6 +180,7 @@ class WiserHome(RestoreEntity):
                 self._attributes['boiler'] = state.attributes['boiler']
                 self._attributes['away_temp'] = state.attributes['away_temp']
                 self._attributes['boost'] = state.attributes['boost']
+                self._attributes['mode'] = state.attributes['mode']
                 for room in self.rooms:
                     await room.restore(state.attributes)
 
