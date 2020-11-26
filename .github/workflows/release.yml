@@ -1,82 +1,82 @@
 name: Release
 
 on:
-  release:
-    types: [published]
-
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: Cache Node.js modules
+        uses: actions/cache@v2
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.OS }}-node-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-node-
+            ${{ runner.OS }}-
+      - name: Find and Replace registry
+        uses: jacobtomlinson/gha-find-replace@0.1.2
+        with:
+          find: "http://172.16.46.46:8081/repository/npm-group/"
+          replace: "https://registry.npmjs.org/"
+          include: "yarn.lock"
+      - name: Install dependencies
+        working-directory: ./card
+        run: yarn --frozen-lockfile
+      - name: Build Card
+        working-directory: ./card
+        run: npm run build
+      - name: Copy component
+        run: |
+          mkdir dist/custom_components
+          rsync -avr --exclude='*_test.py' component/wiser_home/ dist/custom_components/wiser_home
+      - name: Upload dist
+        uses: actions/upload-artifact@v2
+        with:
+          name: wiser-home
+          path: dist
+
+
   release:
-    name: Prepare release
+    name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-
-      # Build
-      - name: Build the file
-        run: |
-          cd /home/runner/work/boilerplate-card/boilerplate-card
-          npm install
-          npm run build
-
-      # Upload build file to the releas as an asset.
-      - name: Upload zip to release
-        uses: svenstaro/upload-release-action@v1-release
-
+      - uses: actions/download-artifact@v2
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: /home/runner/work/boilerplate-card/boilerplate-card/dist/boilerplate-card.js
-          asset_name: boilerplate-card.js
-          tag: ${{ github.ref }}
-          overwrite: true
-
-
-#    package:
-#      name: Package for distribution
-#      needs: card
-#      runs-on: ubuntu-latest
-#
-#      steps:
-#        - name: Download card
-#          uses: actions/download-artifact@v2
-#          with:
-#            name: bundle
-#            path: dist
-#        - name: Display structure of downloaded files
-#          run: ls -R
-#          working-directory: dist
-#        - name: Guide
-#          run: ls -R
-#        - name: Zip Folder
-#          run: zip -r release.zip dist
-#        - name: Release to Github
-#          run: echo "Release"
-#  release:
-#    name: Upload Release Asset
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#      - name: Build project # This would actually build your project, using zip for an example artifact
-#        run: |
-#          zip --junk-paths my-artifact README.md
-#      - name: Create Release
-#        id: create_release
-#        uses: actions/create-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          tag_name: ${{ github.ref }}
-#          release_name: Release ${{ github.ref }}
-#          draft: false
-#          prerelease: false
-#      - name: Upload Release Asset
-#        id: upload-release-asset
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-#          asset_path: ./my-artifact.zip
-#          asset_name: my-artifact.zip
-#          asset_content_type: application/zip
+          name: bundle
+          path: dist
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: dist
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./wiser-home.zip
+          asset_name: wiser-home.zip
+          asset_content_type: application/zip
 
