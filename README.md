@@ -44,7 +44,7 @@ can have its own schedule and/or you can have a general schedule. The structure 
 ``` 
 
 ### Configuration variables
-* **unique_id**  \string\>    REQUIRED<br/>Unique id for the component. You can generate a UUID (online)[https://www.uuidgenerator.net] (use a Version 4 UUID).
+* **unique_id**  \string\>    REQUIRED<br/>Unique id for the component. You can generate a UUID [online](https://www.uuidgenerator.net) (use a Version 4 UUID).
 * **bolier**    \<entity.id\>    REQUIRED<br/>Id of the swtich to control the boiler `on/off`
 * **rooms**    \<map\>    REQUIRED<br/>Information about the rooms in the house. The *key* is the room name and the
 value ifs a room configuration.
@@ -70,6 +70,7 @@ value ifs a room configuration.
 
 ```yaml
 - platform: wiser_home
+    unique_id: d6fa37f4-30ca-4bc2-ab8b-f5e96ca2daac
     boiler: switch.el_switch_1_switch
     rooms:
       master:
